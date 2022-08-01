@@ -213,13 +213,17 @@ bindsym $mod+r mode "resize"
 #  separator_symbol ⟨⟨
 #  font pango:monospace 7
 #}
+set_from_resource $white       color15 #000000
+set $transparent #00000000
 
 bar {
  colors {
-    background #2e2e2e
+    background #2e2e2eB7
     #background #7270ff20
+    #background $transparent
 
     statusline #00A5FF
+    #statusline $white
     separator #6c99bb
 
     focused_workspace  #b05279 #285577 #ffffff
@@ -228,6 +232,7 @@ bar {
     inactive_workspace #333333 #2e2e2e #888888
     urgent_workspace   #2f343a #900000 #ffffff
   }
+  i3bar_command i3bar --transparency
   position top
   status_command i3blocks
   separator_symbol |
@@ -235,7 +240,7 @@ bar {
   font pango:monospace 6.2
   #font pango:JetBrains Mono 6
 }
-bindsym Mod1+m bar mode toggle 
+#bindsym Mod1+m bar mode toggle; exec picom --experimental-backends -b
 
 # Displays a minimal menu to easily restart / shutdown / logout / suspend .. and shutdown
 
@@ -330,6 +335,10 @@ bindsym XF86MonBrightnessUp exec brightnessctl s 5%+
 #for_window [instance="catfish" class="Catfish"] floating enable, move absolute position center
 #bindsym $mod+o i-1-msg exec urxvt -e "filepath=$(fzf); xdg-open $filepath"
 #for_window [instance="^filefinder$" class="^URxvt$"] floating enable, move absolute position center
+
+# Compositor
+#exec --no-startup-id picom --experimental-backends -b
+exec_always --no-startup-id picom --experimental-backends --config ~/.config/picom/picom.conf
 
 # Notifications
 ## Recquires dunst libnotify-bin
