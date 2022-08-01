@@ -1,0 +1,2 @@
+# .dots
+Repositorio de configuraciones
