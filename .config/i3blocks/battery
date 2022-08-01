@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Get current battery capacity/status from stdin or default BAT0
+battery=/sys/class/power_supply/${1:-BAT0}
+read -r capacity <"$battery/capacity"
+read -r status   <"$battery/status"
+
+# Set the color based on capacity
+if [ "$capacity" -ge 85 ]; then
+    color="#A8A8FF"
+elif [ "$capacity" -ge 65 ]; then
+    color="#fabd2f"
+elif [ "$capacity" -ge 50 ]; then
+    color="#d79921"
+elif [ "$capacity" -ge 25 ]; then
+    color="#d65d0e"
+elif [ "$capacity" -ge 10 ]; then
+    color="#cc241d"
+else
+    color="#fb4934"
+fi
+
+# If battery below 10 but is now charging remove warning 
+[ "$status" = "Charging" ] && warn=""
+
+# If discharging and capacity below 10 then remove status  and replace with warning 
+[ "$status" = "Discharging" ] && [ -n "$warn" ] && status=""
+
+# if capacity is 0 and battery is not charging then change icon to empty battery and turn off warning
+[ "$capacity" = 0 ] && [ "$status" = "Unknown" ] && status="------" && warn=""
+
+# Dinamic Rules
+# Almost full
+[ "$capacity" -gt 95 ] && [ "$status" = "Charging" ] && status="⟩⟩⟩⟩⟩-" 
+[ "$capacity" -gt 95 ] && [ "$status" = "Discharging" ] && status="⟨⟨⟨⟨⟨-" 
+# Almost Almost full
+[ "$capacity" -ge 75 ] && [ "$status" = "Charging" ] && status="⟩⟩⟩⟩--" 
+[ "$capacity" -ge 75 ] && [ "$status" = "Discharging" ] && status="⟨⟨⟨⟨--" 
+# Mid 
+[ "$capacity" -ge 50 ] && [ "$status" = "Charging" ] && status="⟩⟩⟩---" 
+[ "$capacity" -ge 50 ] && [ "$status" = "Discharging" ] && status="⟨⟨⟨---" 
+# Mid-something empty
+[ "$capacity" -ge 35 ] && [ "$status" = "Charging" ] && status="⟩⟩----" 
+[ "$capacity" -ge 35 ] && [ "$status" = "Discharging" ] && status="⟨⟨----" 
+# Mid-something something empty
+[ "$capacity" -ge 10 ] && [ "$status" = "Charging" ] && status="⟩----" 
+[ "$capacity" -ge 10 ] && [ "$status" = "Discharging" ] && status="⟨----" 
+# Mid-something something empty
+[ "$capacity" -le 5 ] && [ "$status" = "Charging" ] && status="!----" 
+[ "$capacity" -le 5 ] && [ "$status" = "Discharging" ] && status="!!!!!!" 
+
+#status="${status//,/}"
+#status="${status/#Discharging/}"
+#status="${status/#Not Charging/}"
+#status="${status/#Charging/}"
+#status="${status/#Unknown/}"
+#status="${status/#Full/}"
+#status="${status} "
+
+status="${status//,/}"
+#status="${status/#Discharging/ :  :}"
+status="${status/#Discharging/'⟨⟨⟨⟨⟨⟨'}"
+status="${status/#Not Charging/!     }"
+#status="${status/#Charging/ :  :}"
+status="${status/#Charging/'⟩⟩⟩⟩⟩⟩'}"
+status="${status/#Unknown/??????}"
+status="${status/#Full/||||||}"
+status="${status} "
+
+# Put it all together
+#printf "<span color='%s' underline='double' underline_color='$color'>%s%s%s</span>\n" "$color" "$status" "$warn" "$capacity%"
+#printf "<span fgcolor='#8693e4' underline='double' underline_color='#8693e4'>%s%s%s</span>" "$status" "$warn" "$capacity%"
+#printf "%s%s%s" "$status" "$warn" "$capacity%"
+#echo -e "<span bgcolor='#4e7491' fgcolor='$color' underline='double' underline_color='$color'>• $status$warn$capacity% </span>"
+echo -e "<span fgcolor='$color'>• $status$warn$capacity% </span>"
+
+case $BLOCK_BUTTON in
+    4) brightnessctl s 5%- ;;
+    5) brightnessctl s 5%+ ;;
+esac
